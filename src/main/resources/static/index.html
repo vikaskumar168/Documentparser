@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test File Upload</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        input, button { font-size: 1em; margin-bottom: 10px; }
+        #status { color: #333; }
+    </style>
+</head>
+<body>
+
+    <h2>Test Your Spring Boot Resume Uploader</h2>
+    
+    <input type="file" id="fileInput" accept=".pdf" />
+    
+    <button id="uploadButton">Upload and Test</button>
+    
+    <p id="status"></p>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const uploadButton = document.getElementById('uploadButton');
+        const statusEl = document.getElementById('status');
+
+        uploadButton.addEventListener('click', () => {
+            const file = fileInput.files[0];
+
+            if (!file) {
+                statusEl.textContent = 'Please select a file first.';
+                return;
+            }
+
+            // This is the key to sending a file
+            const formData = new FormData();
+            
+            // This 'file' key MUST match your @RequestParam("file") in Java
+            formData.append('file', file);
+
+            statusEl.textContent = 'Uploading...';
+
+            // Make the API call
+            fetch('https://supreme-lamp-x6prjp79qg42v4xr-8080.app.github.dev/api/files/upload', {
+                method: 'POST',
+                body: formData
+                // Note: No 'Content-Type' header. 
+                // The browser sets 'multipart/form-data' 
+                // with the correct boundary automatically for FormData.
+            })
+            .then(response => {
+                // Check if the server response is okay
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                // Get the text response from your Spring Boot controller
+                return response.text(); 
+            })
+            .then(data => {
+                // Success!
+                statusEl.textContent = 'Upload successful! Server says: ' + data;
+            })
+            .catch(error => {
+                // Error
+                statusEl.textContent = 'Upload failed: ' + error.message;
+                console.error('Error:', error);
+            });
+        });
+    </script>
+
+</body>
+</html>
